@@ -1,0 +1,41 @@
+[
+  {
+    "id": "publica01",
+    "ancho": 1875,
+    "alto": 2256,
+    "ancho_analisis": 266,
+    "alto_analisis": 320,
+    "brillo": 135.93458646616543,
+    "contraste": 45.71392942255174,
+    "sombras_pct": 0.1550751879699248,
+    "luces_pct": 0.0011748120300751881,
+    "entropia": 7.285445142605604,
+    "var_laplaciano": 848.724827872727
+  },
+  {
+    "id": "publica02",
+    "ancho": 5176,
+    "alto": 3556,
+    "ancho_analisis": 320,
+    "alto_analisis": 220,
+    "brillo": 78.9396875,
+    "contraste": 65.43740306855774,
+    "sombras_pct": 13.529829545454545,
+    "luces_pct": 1.872159090909091,
+    "entropia": 7.603799192058471,
+    "var_laplaciano": 2252.2696398887997
+  },
+  {
+    "id": "publica03",
+    "ancho": 602,
+    "alto": 419,
+    "ancho_analisis": 320,
+    "alto_analisis": 223,
+    "brillo": 81.41233183856502,
+    "contraste": 40.61239758788037,
+    "sombras_pct": 0.0,
+    "luces_pct": 0.4568385650224215,
+    "entropia": 6.909227991830986,
+    "var_laplaciano": 1760.0501719498413
+  }
+]
