@@ -12,7 +12,8 @@ fuentes=[
 for f in fuentes:
     p=out/(f['id']+'.jpg')
     if not p.exists():
-        with urlopen(Request(f['url'],headers={'User-Agent':'AcademicImageQuality/1.0'}),timeout=45) as r: p.write_bytes(r.read())
+        url = 'https://raw.githubusercontent.com/sofiadelcal/karen-calidad-imagenes-publicas-s10/main/' + f['id'] + '.jpg'
+        with urlopen(Request(url,headers={'User-Agent':'AcademicImageQuality/1.0'}),timeout=45) as respuesta: p.write_bytes(respuesta.read())
     print(f['id'],p.stat().st_size,flush=True)
 (root/'fuentes_publicas.json').write_text(json.dumps(fuentes,indent=2,ensure_ascii=False),encoding='utf8')
 
