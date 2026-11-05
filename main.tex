@@ -1,0 +1,181 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[margin=1in,headheight=15pt]{geometry}
+\usepackage{newtxtext,newtxmath,setspace,fancyhdr,graphicx,booktabs,caption,float,xurl,hyperref,titlesec,listings}
+\hypersetup{hidelinks}\urlstyle{same}\doublespacing\setlength{\parindent}{0.5in}
+\pagestyle{fancy}\fancyhf{}\rhead{\thepage}\renewcommand{\headrulewidth}{0pt}
+\titleformat{\section}{\normalfont\normalsize\bfseries\centering}{}{0pt}{}
+\captionsetup{labelsep=newline,labelfont=bf,textfont=it,justification=raggedright,singlelinecheck=false}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\newcommand{\refapa}[1]{\par\noindent\hangindent=0.5in\hangafter=1 #1\par}
+\begin{document}
+\begin{titlepage}\thispagestyle{fancy}\begin{center}\vspace*{1.4in}
+\textbf{Calidad visual y aprendizaje métrico con redes siamesas}\par\vspace{\baselineskip}
+Karen Sofía Delgado Calderon\par Universidad de Cundinamarca\par
+Especialización en Inteligencia Artificial\par Deep Learning -- Conceptos\par
+R2-A1-S10 Redes Neuronales V\par 4 de noviembre de 2026
+\end{center}\end{titlepage}\setcounter{page}{2}
+\begin{center}\textbf{Calidad visual y aprendizaje métrico con redes siamesas}\end{center}
+La calidad de una fotografía depende de su iluminación, contenido y resolución. Esta práctica describe tres imágenes públicas de figuras del ámbito musical, con fuentes y licencias verificables, y compara sus distribuciones de intensidad. El trabajo estudia la preparación de imágenes y desarrolla una revisión conceptual de las redes siamesas. El documento incorpora una adaptación práctica con dígitos para ejecutar Triplet Loss y evaluar one-shot y few-shot. El alcance se declara frente a la consigna original de la actividad 73148.
+
+\section{Objetivo y alcance experimental}
+El objetivo es documentar una red siamesa entrenada con Triplet Loss y comparar su capacidad de generalización a clases de dígitos reservadas frente a una representación de píxeles. Se distinguen tres tareas: describir la calidad global de fotografías públicas, entrenar el codificador sobre dígitos y evaluar protocolos one-shot y few-shot. La pregunta central es si reducir la pérdida de entrenamiento mejora también la clasificación de clases que quedaron fuera del ajuste.
+
+Las fotografías se estudian como escenas completas; el experimento de aprendizaje métrico utiliza exclusivamente Digits. Los resultados de dígitos describen ese dominio y requieren aceptación docente como adaptación de la actividad de reconocimiento facial.
+
+\section{Selección y trazabilidad de las imágenes}
+Se seleccionaron tres archivos de Wikimedia Commons. La fotografía de Shakira corresponde a una rueda de prensa de 2014, mientras las de Juanes y Carlos Vives muestran escenas de concierto de 2015 y 2005, respectivamente (b r e n t, 2005; Casal Jr., 2014; Jörgens.Mi, 2015). Los nombres y contextos proceden de las fichas de origen. El manifiesto fuentes\_publicas.json conserva autor, fecha, URL de descarga, página descriptiva y licencia.
+
+Las dimensiones originales son $1875\times2256$, $5176\times3556$ y $602\times419$ píxeles. La muestra reúne escenas con contenido y condiciones diferentes. Se utiliza para describir variación fotográfica global. En particular, las escenas de concierto incorporan focos, instrumentos, fondo y varias personas. El cálculo de brillo de toda la imagen recoge esos elementos. La selección de tres archivos es una decisión de esta práctica y responde al alcance del análisis.
+
+\section{Preparación y medidas}
+Se corrigió la orientación EXIF, se convirtió cada archivo a RGB y se redujo su tamaño conservando la proporción, con un límite de $320\times320$ píxeles y remuestreo Lanczos. Los tamaños resultantes fueron $266\times320$, $320\times220$ y $320\times223$. Pillow documenta la corrección de orientación con ImageOps y el redimensionamiento proporcional con Image.thumbnail (Pillow contributors, s. f.-a, s. f.-b).
+
+Se calcularon las medidas sobre copias en escala de grises, con intensidades de 0 a 255. Brillo corresponde a la media y contraste a la desviación estándar. Se eligieron límites de 10 y 245 para describir píxeles oscuros y claros, respectivamente. La entropía se obtuvo a partir del histograma de 256 valores. La varianza del Laplaciano discreto de cuatro vecinos se calculó sobre los píxeles interiores. Esta medida responde a bordes, textura, ruido y escala, por lo que requiere observar también la imagen.
+
+\begin{figure}[H]\centering
+\caption{Imágenes públicas y sus versiones en escala de grises}\label{fig:panel}
+\includegraphics[width=.98\textwidth]{publicas_panel.png}
+\par\raggedright\footnotesize\textit{Nota.} Imágenes 01, 02 y 03 atribuidas a Marcello Casal Jr./Agência Brasil, Jörgens.Mi/Wikipedia y b r e n t, con retoque de Resize. Reducción proporcional y conversión a grises realizadas para este análisis. Créditos, enlaces y licencias se detallan en la sección correspondiente. La adaptación de pública02 se distribuye bajo CC BY-SA 3.0.\normalsize
+\end{figure}
+
+\section{Resultados}
+La Tabla~\ref{tab:medidas} muestra la diferencia entre la toma cercana y las escenas de concierto. Pública01 tiene mayor brillo medio (135,93). Pública02 reúne un contraste mayor (65,44), un 13,53\% de píxeles oscuros y un 1,87\% de píxeles claros bajo los límites elegidos. Los focos y las zonas oscuras de la escena contribuyen a ese contraste.
+
+\begin{table}[H]\centering
+\caption{Medidas globales después de la reducción proporcional}\label{tab:medidas}
+\begin{tabular}{lrrrr}\toprule
+Archivo & Brillo & Contraste & Oscuros (\%) & Claros (\%)\\\midrule
+publica01 & 135,93 & 45,71 & 0,16 & 0,00 \\
+publica02 & 78,94 & 65,44 & 13,53 & 1,87 \\
+publica03 & 81,41 & 40,61 & 0,00 & 0,46 \\
+\bottomrule\end{tabular}\par\vspace{6pt}
+\raggedright\footnotesize\textit{Nota.} Se analizaron todas las regiones de cada imagen reducida. Los píxeles oscuros cumplen $I\leq10$ y los claros $I\geq245$. El valor de claros de pública01 es 0,00117\% antes del redondeo. Datos de calidad\_publicas.csv.\normalsize
+\end{table}
+
+La entropía fue 7,29, 7,60 y 6,91 bits por píxel, y la varianza del Laplaciano fue 848,72, 2252,27 y 1760,05. Estas diferencias describen escenas distintas y requieren separar iluminación, detalle y contenido. El mayor Laplaciano de pública02 coincide con una escena con numerosos bordes y focos. Ese resultado por sí solo resulta insuficiente para clasificar su enfoque como superior.
+
+\begin{figure}[H]\centering
+\caption{Histogramas de intensidad de las imágenes públicas}\label{fig:hist}
+\includegraphics[width=.92\textwidth]{publicas_histogramas.png}
+\par\raggedright\footnotesize\textit{Nota.} Se usaron 32 intervalos con densidad normalizada. Cada distribución corresponde a la imagen completa reducida. Elaboración propia.\normalsize
+\end{figure}
+
+La Figura~\ref{fig:hist} permite relacionar las estadísticas con la distribución completa. La normalización de la densidad admite tamaños de imagen diferentes. Una evaluación controlada de cambios de exposición o desenfoque requeriría repetir la misma escena manteniendo encuadre y escala. Como ejercicio posterior de calidad, podrían medirse versiones de una misma imagen con una transformación documentada.
+
+\section{Fundamentos de redes siamesas}
+Una arquitectura siamesa utiliza un codificador con parámetros compartidos sobre varias entradas. Las representaciones se sitúan en un mismo espacio y su relación se expresa mediante una función de distancia. FaceNet describe el aprendizaje de representaciones mediante tríos de ejemplos (Schroff et al., 2015).
+
+Triplet Loss relaciona un ancla, un ejemplo positivo y uno negativo. Conceptualmente, $L=\max(0,d(a,p)-d(a,n)+m)$, donde $m$ es el margen. La selección de tríos y la calidad de las etiquetas afectan al aprendizaje. Este fundamento se presenta como revisión de literatura.
+
+One-shot describe la disponibilidad de una referencia por clase, y few-shot la de unos pocos ejemplos. Los prototipos resumen observaciones en un espacio aprendido (Snell et al., 2017). Zero-shot requiere información auxiliar para relacionar clases sin ejemplos de referencia. Estas condiciones definen protocolos de evaluación distintos. El análisis de las imágenes públicas describe su calidad global. La adaptación con dígitos se desarrolla a continuación.
+
+
+\section{Adaptación práctica con dígitos}
+La pregunta experimental es si una representación aprendida con Triplet Loss transfiere mejor a clases nuevas que una línea base de píxeles normalizados. Se utilizó el conjunto Digits, de imágenes de $8\times8$, incluido en scikit-learn (Scikit-learn developers, s. f.). Esta práctica implementa aprendizaje métrico con dígitos y se presenta como adaptación de la parte experimental de la consigna.
+
+Las clases 0 a 4 aportaron 901 imágenes de ajuste. Se reservaron las clases 5 y 6 para calibración y las clases 7, 8 y 9 para prueba. Se normalizaron intensidades dividiendo por 16. El codificador comparte pesos entre sus ramas y transforma las 64 entradas en una capa de 128 unidades con ReLU, seguida de 32 coordenadas normalizadas. Adam ajustó los parámetros con tasa 0,001, margen 0,25, 30 épocas y diez lotes de 64 tríos por época. Cada trío contiene dos muestras distintas de una clase de ajuste y una de otra clase. Se empleó TripletMarginLoss de PyTorch (PyTorch contributors, s. f.). La semilla fue 211.
+
+\begin{table}[H]\centering
+\caption{Partición de clases antes de entrenar}\label{tab:particion}
+\begin{tabular}{llrl}\toprule
+Etapa & Clases & Imágenes & Uso\\\midrule
+Ajuste & 0, 1, 2, 3, 4 & 901 & Gradientes\\
+Calibración & 5, 6 & 363 & Umbrales\\
+Prueba & 7, 8, 9 & 533 & Evaluación final\\\bottomrule
+\end{tabular}
+\par\raggedright\footnotesize\textit{Nota.} Los 1.797 ejemplos pertenecen a una sola partición por clase. Fuente: load\_digits.\normalsize
+\end{table}
+
+La Tabla~\ref{tab:particion} distingue el ajuste de parámetros y la calibración de decisiones. El codificador contiene 12.448 parámetros entrenables: 8.320 en la primera capa y 4.128 en la segunda. Las ramas emplean el mismo objeto de PyTorch. Por tanto, procesar tres entradas conserva ese número de parámetros compartidos.
+
+Para cada trío de dígitos, el programa calcula la distancia euclidiana entre representaciones normalizadas. La función de costo implementada puede escribirse como
+\begin{equation}
+\ell(a,p,n)=\max\{0,\|f_\theta(a)-f_\theta(p)\|_2-\|f_\theta(a)-f_\theta(n)\|_2+0{,}25\}.
+\end{equation}
+Aquí, $a$ y $p$ son imágenes diferentes del mismo dígito, y $n$ pertenece a otro dígito de ajuste. El margen penaliza tríos cuya separación resulta insuficiente. El promedio del lote es la cantidad que retropropaga PyTorch. La normalización de las salidas sitúa las distancias entre 0 y 2; el programa comprueba que las representaciones son finitas y tienen norma unitaria.
+
+One-shot utiliza una referencia y few-shot utiliza cinco. En cada condición se promedian y normalizan las referencias para obtener un prototipo. La línea base aplica el mismo procedimiento a los 64 píxeles normalizados. Los dos métodos evalúan exactamente las mismas galerías y consultas. Se reserva siempre un conjunto de cinco imágenes por clase para construir la galería, y otras 20 como consultas. Hay 20 episodios con distintas selecciones de referencias y consultas. Las imágenes pueden repetirse entre episodios, por lo que las 1.200 consultas acumuladas corresponden a evaluaciones reutilizadas, no a 1.200 imágenes únicas.
+
+Los umbrales se eligieron en las clases de calibración minimizando FAR + FRR sobre 201 valores entre 0 y 2. Se congelaron antes de evaluar las clases de prueba. FAR cuenta aceptaciones entre clases distintas y FRR rechazos dentro de la misma clase. La asignación cerrada elige el prototipo más cercano y su exactitud se calcula por separado.
+
+\begin{figure}[H]\centering
+\caption{Ajuste de la red y comparación con una línea base}\label{fig:metrica}
+\includegraphics[width=.97\textwidth]{comparacion_metrica.png}
+\par\raggedright\footnotesize\textit{Nota.} Pérdida media por época sobre las clases 0 a 4, y exactitud media de los 20 episodios sobre clases 7 a 9. Elaboración propia.\normalsize
+\end{figure}
+
+La pérdida desciende de 0,058657 a 0,000157. La Tabla~\ref{tab:metrica} y la Figura~\ref{fig:metrica} muestran que ese descenso no asegura una representación superior para clases reservadas. La línea base obtiene mayor exactitud en las dos condiciones de referencias. El entrenamiento se concentra en cinco clases, lo que puede limitar la transferencia a trazos de otros dígitos.
+
+\begin{table}[H]\centering
+\caption{Evaluación acumulada de los episodios de prueba}\label{tab:metrica}
+\begin{tabular}{llrrr}\toprule
+Representación & Referencias & Aciertos (\%) & FAR (\%) & FRR (\%)\\\midrule
+Píxeles & 1 & 75,08 & 40,75 & 18,33\\
+Píxeles & 5 & 91,33 & 15,38 & 17,50\\
+Siamesa & 1 & 60,58 & 16,04 & 51,75\\
+Siamesa & 5 & 74,33 & 40,83 & 15,75\\\bottomrule
+\end{tabular}\par\vspace{6pt}
+\raggedright\footnotesize\textit{Nota.} Cada fila reúne 1.200 consultas genuinas y 2.400 comparaciones entre clases distintas, con reutilización de imágenes entre episodios. Los umbrales de calibración fueron 0,75 y 0,59 para píxeles, y 0,88 y 1,01 para la red. Fuente: resumen\_metrica.json.\normalsize
+\end{table}
+
+Cinco referencias aumentan la exactitud de la red, pero también su FAR. El prototipo y el umbral calibrado cambian entre condiciones. Esto ilustra que aumentar referencias puede desplazar los tipos de error y exige interpretar varias medidas. Los promedios describen una semilla y un conjunto pequeño de clases. Para estimar incertidumbre harían falta repeticiones del entrenamiento y particiones de clases independientes.
+
+\begin{figure}[H]\centering
+\caption{Asignaciones de la red en el primer episodio de prueba}\label{fig:matrices}
+\includegraphics[width=.47\textwidth]{matriz_1.png}\hfill
+\includegraphics[width=.47\textwidth]{matriz_5.png}
+\par\raggedright\footnotesize\textit{Nota.} Filas indican clase real y columnas la asignada. Se muestran 20 consultas por clase en el primer episodio. El resumen de la tabla utiliza los veinte episodios. Elaboración propia.\normalsize
+\end{figure}
+
+El cuaderno Karen\_Siamesa\_Digitos.ipynb incluye código, salidas y figuras. Se publica en el mismo repositorio del análisis de imágenes y puede abrirse en \href{https://colab.research.google.com/github/sofiadelcal/karen-calidad-imagenes-publicas-s10/blob/main/Karen_Siamesa_Digitos.ipynb}{Google Colab}. Zero-shot queda como explicación conceptual, ya que los episodios evaluados utilizan referencias visuales.
+
+\section{Evidencia de ejecución y lectura de las métricas}
+El cuaderno de dígitos se ejecutó de principio a fin localmente y en Google Colab el 4 de noviembre de 2026. Ambas ejecuciones reprodujeron 901/1.200 y 1.096/1.200 aciertos de la línea base, y 727/1.200 y 892/1.200 del modelo, para una y cinco referencias, respectivamente. La Figura~\ref{fig:colab} conserva la interfaz de Colab, el cuaderno y sus salidas. El repositorio incluye el archivo de resultados y esta captura.
+
+\begin{figure}[H]\centering
+\caption{Ejecución del cuaderno de dígitos en Google Colab}\label{fig:colab}
+\includegraphics[width=\textwidth]{evidencia_colab_metrica.png}
+\par\raggedright\footnotesize\textit{Nota.} Captura propia del 4 de noviembre de 2026. Las cifras completas aparecen en la Tabla~\ref{tab:metrica} y en resumen\_metrica.json.\normalsize
+\end{figure}
+
+Se distinguen dos decisiones. La exactitud de clasificación asigna cada consulta al prototipo más cercano entre las tres clases de prueba, incluso si todas sus distancias son grandes. FAR y FRR evalúan por separado la aceptación por umbral. Se calculan como $\mathrm{FAR}=FA/N_{\neq}$ y $\mathrm{FRR}=FR/N_{=}$: los denominadores son 2.400 comparaciones de distinta clase y 1.200 de la misma clase, respectivamente. Estas tasas describen el protocolo de comparación de dígitos. La exactitud cerrada y las tasas por umbral responden a preguntas diferentes.
+
+En la red, pasar de una a cinco referencias incrementa la exactitud en 13,75 puntos porcentuales y reduce FRR en 36,00 puntos. Al mismo tiempo, FAR aumenta 24,79 puntos. Por ello, la ganancia de clasificación debe interpretarse junto con el compromiso entre aceptaciones y rechazos. La línea base supera al modelo en 14,50 y 17,00 puntos porcentuales de exactitud. La evidencia disponible no demuestra una ventaja de la representación aprendida.
+
+Las condiciones evaluadas son one-shot y few-shot, como resume la Tabla~\ref{tab:metrica}. Zero-shot supondría clasificar sin ejemplos visuales de la nueva clase mediante información auxiliar. Reservar clases durante el entrenamiento y luego proporcionarles referencias corresponde al protocolo de pocas muestras ejecutado aquí. El trabajo desarrolla zero-shot conceptualmente y no aporta un experimento zero-shot.
+
+\section{Conclusiones}
+La implementación entrena un codificador compartido, genera tríos válidos y evalúa clases excluidas del ajuste. El descenso de la pérdida demuestra optimización del criterio de entrenamiento, mientras que la comparación con píxeles muestra una transferencia limitada. La hipótesis de superioridad del modelo aprendido queda sin respaldo en esta partición.
+
+La separación de clases y la congelación de umbrales antes de la prueba reducen la contaminación de la evaluación. Los veinte episodios permiten observar distintas galerías, aunque reutilizan imágenes y mantienen un único entrenamiento. En consecuencia, las 1.200 consultas acumuladas expresan evaluaciones, y la incertidumbre entre entrenamientos y particiones sigue pendiente.
+
+La calidad fotográfica global debe interpretarse con el contenido de cada escena. Los tres archivos públicos permiten reproducir las medidas y revisar sus licencias. La parte práctica siamesa corresponde a dígitos y su equivalencia con el requisito facial de la actividad debe ser evaluada por la profesora.
+
+\section{Créditos y condiciones de reutilización}
+\noindent\textbf{publica01.} Shakira. Marcello Casal Jr/Agência Brasil. 2014-07-12. Archivo \textit{Shakira 2014.jpg}. CC BY 3.0 BR, \url{https://creativecommons.org/licenses/by/3.0/br/}. Fuente: \url{https://commons.wikimedia.org/wiki/File:Shakira_2014.jpg}. Transformaciones de esta práctica: reducción proporcional y conversión a grises.
+
+\noindent\textbf{publica02.} Juanes. Jörgens.Mi/Wikipedia. 2015-07-18. Archivo \textit{Juanes ZMF 2015 jm49211.jpg}. CC BY-SA 3.0, \url{https://creativecommons.org/licenses/by-sa/3.0/}. Fuente: \url{https://commons.wikimedia.org/wiki/File:Juanes_ZMF_2015_jm49211.jpg}. Transformaciones de esta práctica: reducción proporcional y conversión a grises.
+
+\noindent\textbf{publica03.} Carlos Vives. b r e n t; retoque de Resize. 2005-09-16. Archivo \textit{Carlos Vives.jpg}. CC BY 2.0, \url{https://creativecommons.org/licenses/by/2.0/}. Fuente: \url{https://commons.wikimedia.org/wiki/File:Carlos_Vives.jpg}. Transformaciones de esta práctica: reducción proporcional y conversión a grises.
+
+Los archivos originales se incluyen en datos\_publicos. El panel contiene reducciones y versiones en grises. La versión derivada de pública02 conserva CC BY-SA 3.0. Las fotografías 01 y 03 mantienen sus condiciones de atribución correspondientes. La selección y la publicación de resultados describen un uso académico de las imágenes.
+
+\section{Reproducción y alcance}
+El script calidad\_publicas.py se ejecutó localmente el 4 de noviembre de 2026 y generó calidad\_publicas.csv, calidad\_publicas.json y las dos figuras. El cuaderno Karen\_Calidad\_Publicas.ipynb conserva las salidas numéricas. El código y los resultados se publican en \url{https://github.com/sofiadelcal/karen-calidad-imagenes-publicas-s10}. Para repetir el análisis se necesita Python con Pillow, NumPy y Matplotlib, el manifiesto y los tres archivos en datos\_publicos. El programa descargar\_publicas.py obtiene las copias incluidas en el repositorio. Las fuentes originales y sus licencias figuran en el manifiesto.
+
+El trabajo desarrolla procedencia, licencias, preprocesamiento y calidad de imágenes públicas, y añade una red siamesa funcional con dígitos. Su implementación acredita entrenamiento, Triplet Loss y evaluación con pocas referencias. La consigna original exige reconocimiento facial, por lo que la aceptación de esta adaptación depende de la profesora. La práctica presentada mide la clasificación y comparación de dígitos.
+
+\clearpage\section{Referencias}
+\refapa{b r e n t. (2005, 16 de septiembre). \textit{Carlos Vives.jpg} [Fotografía, versión retocada por Resize]. Wikimedia Commons. \url{https://commons.wikimedia.org/wiki/File:Carlos_Vives.jpg}}
+\refapa{Casal Jr., M. (2014, 12 de julio). \textit{Shakira 2014.jpg} [Fotografía]. Agência Brasil; Wikimedia Commons. \url{https://commons.wikimedia.org/wiki/File:Shakira_2014.jpg}}
+\refapa{Jörgens.Mi. (2015, 18 de julio). \textit{Juanes ZMF 2015 jm49211.jpg} [Fotografía]. Wikimedia Commons. \url{https://commons.wikimedia.org/wiki/File:Juanes_ZMF_2015_jm49211.jpg}}
+\refapa{Pillow contributors. (s. f.-a). \textit{Image module}. Pillow documentation. \url{https://pillow.readthedocs.io/en/stable/reference/Image.html}}
+\refapa{Pillow contributors. (s. f.-b). \textit{ImageOps module}. Pillow documentation. \url{https://pillow.readthedocs.io/en/stable/reference/ImageOps.html}}
+\refapa{PyTorch contributors. (s. f.). \textit{TripletMarginLoss}. PyTorch documentation. \url{https://docs.pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html}}
+\refapa{Schroff, F., Kalenichenko, D., \& Philbin, J. (2015). FaceNet: A unified embedding for face recognition and clustering. \textit{2015 IEEE Conference on Computer Vision and Pattern Recognition} (pp. 815--823). \url{https://doi.org/10.1109/CVPR.2015.7298682}}
+\refapa{Scikit-learn developers. (s. f.). \textit{load\_digits}. scikit-learn. \url{https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html}}
+\refapa{Snell, J., Swersky, K., \& Zemel, R. S. (2017). Prototypical networks for few-shot learning. \textit{Advances in Neural Information Processing Systems, 30}. \url{https://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning}}
+\clearpage\section{Apéndice: código de la adaptación con dígitos}
+\begingroup\singlespacing\lstinputlisting[basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,keepspaces=true]{codigo_metrica.txt}\endgroup
+\end{document}
