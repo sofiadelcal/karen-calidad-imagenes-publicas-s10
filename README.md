@@ -2,6 +2,8 @@
 
 La práctica de la actividad 73148 compara una red siamesa con una línea base de píxeles usando las fotografías públicas de Labeled Faces in the Wild (LFW). Las identidades de ajuste, calibración y prueba forman grupos disjuntos.
 
+El informe de entrega es Karen_Redes_V_LFW_APA.pdf. Incluye las tablas de la corrida local y la captura de la ejecución en Colab.
+
 ## Repetir el experimento
 
 Abre Karen_Siamesa_LFW.ipynb en Google Colab y elige **Entorno de ejecución → Ejecutar todo**. La primera ejecución descarga LFW mediante scikit-learn. También puedes instalar las dependencias de requirements_lfw.txt y ejecutar siamesa_lfw.py en Python.
